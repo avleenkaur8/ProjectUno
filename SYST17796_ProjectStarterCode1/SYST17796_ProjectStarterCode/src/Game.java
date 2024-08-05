@@ -1,11 +1,18 @@
 import java.util.List;
 
-public class Game {
+/**
+ * Design Patterns and Principles Used:
+ * 1. SRP: Manages game operations like starting, ending, and player turns.
+ * 2. DIP: Depends on abstractions (`Deck`, `Player`).
+ * 3. DRY: Avoids redundancy with reusable methods.
+ */
 
-    private List<Player> players;
-    private Deck drawPile;
-    private Deck discardPile;
-    private int currentPlayerIndex;
+// DIP : Dependency Inversion Principle
+public class Game {
+    private final List<Player> players;
+    private final Deck drawPile;
+    private final Deck discardPile;
+    private int currentPlayerIndex; // Encapsulation: Private state for tracking the current player
 
     public Game(List<Player> players, Deck drawPile, Deck discardPile) {
         this.players = players;
@@ -13,58 +20,62 @@ public class Game {
         this.discardPile = discardPile;
         this.currentPlayerIndex = 0;
     }
-    //Starting the game
+
+    //DRY principle is used
     public void startGame() {
         System.out.println("Game has started!");
-        for (Player player : players) {
-            for (int i = 0; i < 7; i++) { // Each player draws 7 cards to start the game
-                player.drawCard(drawPile);
-            }
-        }
+        players.forEach(player -> dealInitialCards(player, 7));
+        players.forEach(Player::showHand); // Show each player's hand after dealing
     }
 
-    // Moving to next player
+    private void dealInitialCards(Player player, int numberOfCards) {
+        for (int i = 0; i < numberOfCards; i++) {
+            player.drawCard(drawPile); // DRY: Reusable method for dealing cards to a player
+        }
+    }
+    
+    //DRY principle is used
     public void nextPlayer() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        System.out.println("Player playing now: " + players.get(currentPlayerIndex).getName());
+        System.out.println("It's " + players.get(currentPlayerIndex).getName() + "'s turn.");
     }
 
-    //Player to declare UNO
-    /**
-     * 
-     * @param playerIndex
-     */
-    public void declareUno(int playerIndex) {
-        if (playerIndex >= 0 && playerIndex < players.size()) {
-            System.out.println(players.get(playerIndex).getName() + " has declared UNO!");
+    public void declareUno() {
+        Player currentPlayer = players.get(currentPlayerIndex);
+        if (currentPlayer.getHand().size() == 1) {
+            System.out.println(currentPlayer.getName() + " declares UNO!");
         } else {
-            throw new IllegalArgumentException("Invalid player index");
+            System.out.println(currentPlayer.getName() + " cannot declare UNO.");
         }
     }
 
-    //End the game
     public void endGame() {
-        System.out.println("Game ended!");
+        Player winner = players.stream()
+            .min((p1, p2) -> Integer.compare(p1.getHand().size(), p2.getHand().size()))
+            .orElse(null);
+        
+        if (winner != null) {
+            System.out.println("The game is over! The winner is " + winner.getName() + " with " + winner.getHand().size() + " cards left.");
+        } else {
+            System.out.println("The game is over! No winner could be determined.");
+        }
     }
 
-    // Main method for testing the Game class
     public static void main(String[] args) {
-        // Creating players, draw pile, and discard pile for testing
-        Player player1 = new Player("Avleen");
-        Player player2 = new Player("Muskan");
-        List<Player> players = List.of(player1, player2);
-
-        Deck drawPile = new Deck();
-        drawPile.initializeUnoDeck();
-        drawPile.shuffle();
+        Deck drawPile = Deck.getInstance(); // Singleton Pattern: Get the singleton instance of Deck
+        drawPile.initializeUnoDeck();  //DRY
+        drawPile.shuffle();  //DRY
 
         Deck discardPile = new Deck();
 
-        // Create and start the game here
-        Game game = new Game(players, drawPile, discardPile);
+        Player player1 = new Player("Avleen");
+        Player player2 = new Player("Muskan");
+
+        Game game = new Game(List.of(player1, player2), drawPile, discardPile);
         game.startGame();
         game.nextPlayer();
-        game.declareUno(1);
+        game.declareUno();
+        game.nextPlayer();
         game.endGame();
     }
 }

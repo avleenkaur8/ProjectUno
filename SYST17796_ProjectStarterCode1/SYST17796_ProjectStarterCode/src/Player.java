@@ -1,78 +1,39 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Design Patterns and Principles Used:
+ * 1. Encapsulation: Private fields with public methods to manage the player's hand.
+ * 2. SRP: Handles player-specific actions such as drawing cards.
+ */
 public class Player {
-
-    private List<Card> hand;
-    private String name;
+    private final String name;
+    private final List<Card> hand;
 
     public Player(String name) {
         this.name = name;
         this.hand = new ArrayList<>();
     }
-    
-    /**
-    * 
-    * @param deck
-    */
-    //Draw a card from the deck
-    public void drawCard(Deck deck) {
-        Card drawnCard = deck.drawCard();
-        if (drawnCard != null) {
-            hand.add(drawnCard);
-            System.out.println(name + " drew a " + drawnCard);
-        }
-    }
-    
-    /**
-    * 
-    * @param card
-     * @return 
-    */
-    //Play a card from player hand
-    public boolean playCard(Card card) {
-        if (hand.contains(card)) {
-            hand.remove(card);
-            System.out.println(name + " played a " + card);
-            return true;
-        } else {
-            System.out.println(name + " doesn't have " + card + " in hand.");
-            return false;
-        }
-    }
 
-    // Shows the player's hand
-    public void showHand() {
-        System.out.println(name + "'s hand:");
-        for (Card card : hand) {
-            System.out.println(card);
-        }
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    //Testing the Player class
-    public static void main(String[] args) {
-        // Create a deck and a player for testing
-        Deck deck = new Deck();
-        deck.initializeUnoDeck();
-        deck.shuffle();
-
-        Player player = new Player("Avleen");
-
-        player.drawCard(deck);
-        player.drawCard(deck);
-        player.showHand();
-
-        if (!player.getHand().isEmpty()) {
-            player.playCard(player.getHand().get(0));
-        }
-        player.showHand();
+    public String getName() {  //Encapsulation
+        return this.name;
     }
 
     public List<Card> getHand() {
-        return hand;
+        return new ArrayList<>(this.hand); // Encapsulation: Return a copy of the hand to maintain encapsulation
+    }
+
+    public void drawCard(Deck deck) {
+        Card card = deck.drawCard();
+        if (card != null) {
+            hand.add(card);
+            System.out.println(name + " drew " + card); // SRP: Output card draw action
+        } else {
+            System.out.println(name + " could not draw a card."); // SRP: Output failure to draw card
+        }
+    }
+
+    public void showHand() {
+        System.out.println(name + "'s hand: " + hand);  // SRP: Output the player's hand
     }
 }

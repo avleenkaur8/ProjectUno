@@ -1,64 +1,57 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Design Patterns and Principles Used:
+ * 1. Singleton Pattern: Ensures only one instance of Deck.
+ * 2. Encapsulation: Private fields with methods to manage the deck.
+ * 3. DRY: Reusable methods for deck operations.
+ */
 public class Deck {
+    private static Deck instance; // Singleton Pattern: Static instance variable
+    private List<Card> cards;   // Encapsulation: Private field to store cards
 
-    private List<Card> cards;
 
-    public Deck() {
-        this.cards = new ArrayList<>();
+    Deck() {
+        cards = new LinkedList<>();
     }
-
-    //Shuffles deck
-    public void shuffle() {
-        Collections.shuffle(cards);
-        System.out.println("Deck has been shuffled.");
-    }
-
-    //Draw a card from top of the deck
-    public Card drawCard() {
-        if (!cards.isEmpty()) {
-            return cards.remove(0);
-        } else {
-            System.out.println("Deck is empty. Can't draw card.");
-            return null;
+    /**
+     * Provides access to the single instance of Deck.
+     * 
+     * @return The singleton instance of Deck.
+     */
+    public static Deck getInstance() {
+        if (instance == null) {
+            instance = new Deck(); 
         }
+        return instance;
     }
 
-    //Initialize a standard Uno deck
     public void initializeUnoDeck() {
-        String[] colors = {"Red", "Yellow", "Green", "Blue"};
+        // Example initialization for a simple deck with a few cards
+        // You should add all necessary UNO cards here
+        cards.clear(); // DRY: Clear any existing cards before adding new ones
+        String[] colors = {"Red", "Green", "Blue", "Yellow"};
         String[] values = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Skip", "Reverse", "Draw Two"};
 
         for (String color : colors) {
             for (String value : values) {
-                cards.add(new Card(color, value));
-                if (!value.equals("0")) {
-                    cards.add(new Card(color, value));
-                }
+                cards.add(new Card.CardBuilder().setColor(color).setValue(value).build());
             }
         }
-
-        for (int i = 0; i < 4; i++) {
-            cards.add(new Card("Wild", "Wild"));
-            cards.add(new Card("Wild", "Wild Draw Four"));
-        }
-
-        System.out.println("Initialized Uno deck with " + cards.size() + " cards.");
     }
 
-    //Testing the Deck class
-    public static void main(String[] args) {
-        Deck deck = new Deck();
-        deck.initializeUnoDeck();
-        deck.shuffle();
+    public void shuffle() {
+        Collections.shuffle(cards);
+    }
 
-        for (int i = 0; i < 5; i++) {
-            Card drawnCard = deck.drawCard();
-            if (drawnCard != null) {
-                System.out.println("Drew card: " + drawnCard);
-            }
-        }
+    public Card drawCard() {
+        return cards.isEmpty() ? null : cards.remove(cards.size() - 1); // DRY: Draw the top card from the deck
+    }
+
+    public void addCard(Card card) {
+        cards.add(card); // DRY: Add a new card to the deck
     }
 }
